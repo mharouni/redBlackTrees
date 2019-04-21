@@ -1,4 +1,3 @@
-
 class Node:#1 is black and 0 is red
 
     def __init__(self, val, parent, color: bool, left=None, right=None):
@@ -9,7 +8,7 @@ class Node:#1 is black and 0 is red
         self.color = color
 
     def __repr__(self):
-        if self.color == False:
+        if not self.color:
             col = "Red"
         else:
             col = "Black"
@@ -33,6 +32,12 @@ class Node:#1 is black and 0 is red
             return True
         else:
             return False
+
+    def swapColor(self):
+        if self.color is False:
+            self.color = True
+        else:
+            self.color = False
 
 
 

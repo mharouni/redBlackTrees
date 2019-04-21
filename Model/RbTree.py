@@ -1,12 +1,11 @@
 from Model.Node import Node
 
-class Tree:
 
+class Tree:
 
     def __init__(self):
         self.root = None
         self.count = 0
-
 
     def __repr__(self):
         return "{0} Elements with height {1} ".format(self.count, self._getHeight())
@@ -19,16 +18,16 @@ class Tree:
             parent = self._findParent(self.root, val)
             if parent:
                 newNode = Node(val, parent, False)
-                if parent.val < newNode.val:
+                if parent < newNode:
                     parent.right = newNode
-                else:
+                elif parent > newNode:
                     parent.left = newNode
                 self.count += 1
-              #  self._rebalance(newNode)#to be implemented
+                #self._insertRebalance(newNode)#to be implemented
             else:
                 raise Exception("Word {0} already in Dict".format(val))
 
-    def _findParent(self,node,val)->Node:
+    def _findParent(self, node, val)->Node:
 
         if (not node.left) and (not node.right):
             return node
@@ -47,7 +46,7 @@ class Tree:
         elif node.val == val:
             return None
 
-    def search(self,val)-> Node:
+    def search(self, val)-> Node:
         if not self.root:
             print("Nothing inserted")
             return None
@@ -75,40 +74,99 @@ class Tree:
         elif node.val == val:
             return node
 
-    def _rebalance(self,node):
-        parent = node.parent
-        grandParent = node.parent.parent
-        if (parent is None  # impossible
-                or parent.parent is None  # parent is the root
-                or (node.color != False or parent.color != False)): #False = Red
-            return
-
     def _getHeight(self)-> int:
 
         if self.root:
             height = 1
-            height = self._traverse(self.root, height)
+            height = self._traverseHeight(self.root, height)
             return height
 
 
         else:
             return 0
 
-    def _traverse(self,node: Node, height: int)->int:
+    def _traverseHeight(self,node: Node, height: int)->int:
         if node.left or node.right:
             height += 1
             if node.left:
-                return self._traverse(node.left, height)
+                return self._traverseHeight(node.left, height)
             if node.right:
-                return self._traverse(node.right, height)
+                return self._traverseHeight(node.right, height)
         else:
             return height
+
+    def _update(self,parent :Node, grandParent : Node , greatGrandParent : Node):
+        parent.parent = greatGrandParent
+        if greatGrandParent:
+            if greatGrandParent > grandParent:
+                greatGrandParent.left = parent
+            else:
+                greatGrandParent.right = parent
+        else:
+            self.root = parent
+
+
+
+    def _rotateLeft(self, node : Node, parent : Node, grandParent: Node):
+        greatGrandParent = grandParent.parent
+        self._update(parent, grandParent, greatGrandParent)
+        oldLeft = parent.left
+        parent.right = grandParent
+        grandParent.parent = parent
+        grandParent.right = oldLeft
+        if oldLeft:
+            oldLeft.parent = grandParent
+
+
+    def _rotateRight(self, node : Node, parent : Node, grandParent: Node):
+        greatGrandParent = grandParent.parent
+        self._update(parent, grandParent, greatGrandParent)
+        oldRight = parent.right
+        parent.right = grandParent
+        grandParent.parent = parent
+        grandParent.left = oldRight
+        if oldRight:
+            oldRight.parent = grandParent
+
+    def _leftLeft(self, node: Node,parent: Node, grandParent: Node):
+
+        self._rotateRight(node, parent ,grandParent)
+        parent.swapColor()
+        grandParent.swapColor()
+
+    def _rightRight(self,node: Node,parent: Node, grandParent: Node):
+        self._rotateLeft(node, parent ,grandParent)
+        parent.swapColor()
+        grandParent.swapColor()
+
+
+    def _rightLeft(self, node :Node, parent: Node, grandParent: Node):
+        self._rotateRight(None, node, parent)
+        self._rightRight(node, parent, grandParent)
+
+    def _leftRight(self, node :Node, parent: Node, grandParent: Node):
+        self._rotateLeft(None, Node, parent)
+        self._leftLeft(node,parent,grandParent)
+
+    def _recolor(self, x:Node):
+
+
+
+
+ 
+
+
+
+
+
+
 
     def test(self,node):
         if node.left:
             self.test(node.left)
+        print(node)
         if node.right:
             self.test(node.right)
-        print(node)
+
 
 
