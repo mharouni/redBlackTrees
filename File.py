@@ -29,6 +29,7 @@ class File:
         fileWriter.tell()
         fileWriter.seek(fileWriter.tell())
         fileWriter.write(str(word)+"\n")
+        fileWriter.close()
 
 
 
