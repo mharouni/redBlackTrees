@@ -71,14 +71,9 @@ class Tree:
         elif node.val > val:
             if node.left:
                 return self._findNode(node.left, val)
-          #  else:
-           #     return None
         elif node.val < val:
             if node.right:
                 return self._findNode(node.right, val)
-            #else:
-             #   return None
-
 
     def _getHeight(self)-> int:
 
@@ -140,7 +135,7 @@ class Tree:
         grandParent.swapColor()
 
     def _rightRight(self,node: Node,parent: Node, grandParent: Node):
-        self._rotateLeft(node, parent , grandParent)
+        self._rotateLeft(node, parent, grandParent)
         parent.swapColor()
         grandParent.swapColor()
 
@@ -186,6 +181,141 @@ class Tree:
                 self._rightLeft(node, parent, grandParent)
 
 
+    def _getInorderSuccessor(self, node: Node)-> Node:
+        if node.right is not None:
+            return self._min(node.right)
+        else:
+            parent = node.parent
+            while parent:
+                if node is parent.right:
+                    break
+                else:
+                    node = parent
+                    parent = parent.parent
+
+    def _min(self, node: Node)-> Node:
+        if node.left:
+            return self._min(node.left)
+        else:
+            return node
+
+    def remove(self, node: Node, value):
+        if value < node.val:
+            return self.remove(node.left, value)
+        elif value > node.val:
+            return self.remove(node. right, value)
+        elif value == node.val:
+            nodeToRemove = node
+            if node.right and node.left:
+                suc = self._getInorderSuccessor(node)
+                node.val = suc.val
+                nodeToRemove = suc
+
+            self._remove(nodeToRemove)
+            self.count -= 1
+        else:
+            return
+
+
+
+
+    def _remove(self, node: Node):
+        leftChild = node.left
+        rightChild = node.right
+        child = leftChild if node.left else rightChild
+        if node == self.root:
+            if child: #removing root while it has a single child
+                self.root = child
+                self.root.parent = None
+                self.root.color = True
+            else:
+                self.root = None
+        elif not node.color:
+            if leftChild or rightChild:
+                self._removeLeaf(node)
+            else:
+                raise Exception("BlackHeightError")
+        else:#Node is black
+            if leftChild:
+                if leftChild.left or leftChild.right:
+                    raise Exception("BlackNode red child problem1")
+            if rightChild:
+                if rightChild.right or rightChild.left:
+                    raise Exception("BlackNode red child problem2")
+            if not child.color:#red child
+                node.val = child.val
+                node.left = child.left
+                node.right = child.right
+            else:#black child
+                self._removeBlackNode(node)
+
+
+
+    def _removeLeaf(self, node: Node):
+        if node >= node.parent:
+            node.parent.right = None
+        else:
+            node.parent.left = None
+
+    def _removeBlackkNode(self, node: Node):
+        self._case1(node)
+        self._removeLeaf(node)
+
+
+    def _case1(self, node: Node):#removing root//terminating case
+        if node is self.root:
+            node.color = True
+            return
+        self._case2(node=node)
+
+    def _case2(self, node: Node):#parent black sibiling red sibiling's children black or nill
+        parent = node.parent
+        if node is parent.left:
+            sibiling = parent.right
+        else:
+            sibiling = parent.left
+        if (not sibiling.color) and (parent.color) and (not sibiling.left or (sibiling.left.color)) and (not sibiling.right or (sibiling.right.color)):
+            if sibiling is parent.left:
+                self._rotateRight(node=None, parent=sibiling, grandParent=parent)
+            else:
+                self._rotateLeft(node=None, parent=sibiling, grandParent=parent)
+
+            parent.color = False
+            sibiling.color = True
+            return self._case1(node=node)
+        return self._case3(node=node)
+
+    def _case3(self, node: Node):#all black
+        parent = node.parent
+        if node is parent.left:
+            sibiling = parent.right
+        else:
+            sibiling = parent.left
+
+        if parent.color and sibiling.color and (not sibiling.left or (sibiling.left.color)) and (not sibiling.right or (sibiling.right.color)):
+            sibiling.color = False
+            return self._case1(node=parent)
+        return self._case4(node=node)
+
+    def _case4(self,node: Node):#parent red sibiling black with black children
+        parent = node.parent
+        if not parent.color:
+            if node is parent.left:
+                sibiling = parent.right
+            else:
+                sibiling = parent.left
+            if sibiling.color and (not sibiling.left or (sibiling.left.color)) and (not sibiling.right or (sibiling.right.color)):
+                parent.color = True
+                sibiling.color = False
+            return
+        return self._case5(node=Node)
+
+    def _case5(self,node: Node):
+        
+
+
+
+
 
 
     def test(self,node):
@@ -194,6 +324,8 @@ class Tree:
         print(node)
         if node.right:
             self.test(node.right)
+
+
 
 
 

@@ -20,7 +20,11 @@ class File:
 
 
     def search(self, word):
-        self.tree.search(word)
+        target = self.tree.search(word)
+        if target:
+            print("target: " + str(target) + " was Found")
+        else:
+            print ("target: " + str(target) + " was not Found")
 
 
     def insert(self, word):
@@ -31,14 +35,3 @@ class File:
         fileWriter.write(str(word)+"\n")
         fileWriter.close()
 
-
-
-
-
-
-
-f =File()
-f.load()
-
-f.tree.test(f.tree.root)
-f.insert("Ahmed")
