@@ -44,4 +44,3 @@ class Node:#1 is black and 0 is red
 
 
 
-

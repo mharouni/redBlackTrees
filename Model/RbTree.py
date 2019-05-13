@@ -26,7 +26,7 @@ class Tree:
                 self.count += 1
 
             else:
-                ex = "Word "+val+" already in Dict"
+                ex = "Word "+str(val)+" already in Dict"
                 raise Exception(ex)
 
     def _findParent(self, node, val)->Node:
@@ -192,6 +192,7 @@ class Tree:
                 else:
                     node = parent
                     parent = parent.parent
+            return parent
 
     def _min(self, node: Node)-> Node:
         if node.left:
@@ -200,17 +201,18 @@ class Tree:
             return node
 
     def remove(self, node: Node, value):
-        if value < node.val:
+        if  node and value < node.val:
             return self.remove(node.left, value)
-        elif value > node.val:
+        elif node and value > node.val:
             return self.remove(node. right, value)
-        elif value == node.val:
+        elif node and value == node.val:
             nodeToRemove = node
             if node.right and node.left:
                 suc = self._getInorderSuccessor(node)
                 node.val = suc.val
                 nodeToRemove = suc
-
+               # print(nodeToRemove)
+                #print(self.root)
             self._remove(nodeToRemove)
             self.count -= 1
         else:
@@ -221,9 +223,11 @@ class Tree:
 
     def _remove(self, node: Node):
         leftChild = node.left
+       # print(node)
         rightChild = node.right
         child = leftChild if node.left else rightChild
-        if node == self.root:
+        if node is self.root:
+            print("root")
             if child: #removing root while it has a single child
                 self.root = child
                 self.root.parent = None
@@ -231,7 +235,7 @@ class Tree:
             else:
                 self.root = None
         elif not node.color:
-            if leftChild or rightChild:
+            if not (leftChild or rightChild):
                 self._removeLeaf(node)
             else:
                 raise Exception("BlackHeightError")
@@ -242,7 +246,7 @@ class Tree:
             if rightChild:
                 if rightChild.right or rightChild.left:
                     raise Exception("BlackNode red child problem2")
-            if not child.color:#red child
+            if child and (not child.color):#red child
                 node.val = child.val
                 node.left = child.left
                 node.right = child.right
@@ -252,12 +256,12 @@ class Tree:
 
 
     def _removeLeaf(self, node: Node):
-        if node >= node.parent:
+        if node.val >= node.parent.val:
             node.parent.right = None
         else:
             node.parent.left = None
 
-    def _removeBlackkNode(self, node: Node):
+    def _removeBlackNode(self, node: Node):
         self._case1(node)
         self._removeLeaf(node)
 
@@ -274,7 +278,7 @@ class Tree:
             sibiling = parent.right
         else:
             sibiling = parent.left
-        if (not sibiling.color) and (parent.color) and (not sibiling.left or (sibiling.left.color)) and (not sibiling.right or (sibiling.right.color)):
+        if (not sibiling.color) and (parent.color) and ((not sibiling.left) or sibiling.left.color) and ((not sibiling.right) or sibiling.right.color):
             if sibiling is parent.left:
                 self._rotateRight(node=None, parent=sibiling, grandParent=parent)
             else:
@@ -292,31 +296,63 @@ class Tree:
         else:
             sibiling = parent.left
 
-        if parent.color and sibiling.color and (not sibiling.left or (sibiling.left.color)) and (not sibiling.right or (sibiling.right.color)):
+        if parent.color and sibiling.color and ((not sibiling.left) or sibiling.left.color) and ((not sibiling.right) or sibiling.right.color):#potential runtime error
             sibiling.color = False
             return self._case1(node=parent)
         return self._case4(node=node)
 
-    def _case4(self,node: Node):#parent red sibiling black with black children
+    def _case4(self,node: Node):#parent red sibling black with black children
         parent = node.parent
         if not parent.color:
             if node is parent.left:
-                sibiling = parent.right
+                sibling = parent.right
             else:
-                sibiling = parent.left
-            if sibiling.color and (not sibiling.left or (sibiling.left.color)) and (not sibiling.right or (sibiling.right.color)):
+                sibling = parent.left
+            if sibling.color and ((not sibling.left) or sibling.left.color) and ((not sibling.right) or sibling.right.color):#potential run time error
                 parent.color = True
-                sibiling.color = False
+                sibling.color = False
             return
-        return self._case5(node=Node)
+        return self._case5(node=node)
 
     def _case5(self,node: Node):
-        
+        parent = node.parent
+        if node is parent.left:
+            sibiling = parent.right
+            closerNode = sibiling.left
+            outerNode = sibiling.right
+        else:
+            sibiling = parent.left
+            closerNode = sibiling.right
+            outerNode = sibiling.left
+        if (closerNode and (not closerNode.color)) and ((not outerNode) or outerNode.color) and sibiling.color:#potential runtime error
+            if sibiling and (sibiling is parent.left):
+                self._rotateLeft(node=None, parent=closerNode, grandParent=sibiling)
+            else:
+                self._rotateLeft(node=None, parent=closerNode, grandParent=sibiling)
+            closerNode.color = True
+            sibiling.color = False
 
+        self._case6(node=node)
 
-
-
-
+    def _case6(self,node: Node):
+        parent = node.parent
+        if node is parent.left:
+            sibling = parent.right
+            outerNode = sibling.right
+        else:
+            sibling = parent.left
+            outerNode = sibling.left
+        if sibling.color and sibling.color and outerNode and (not outerNode.color):
+            parentColor = parent.color
+            if sibling is parent.left:
+                self._rotateRight(node=None, parent=sibling, grandParent=parent)
+            else:
+                self._rotateLeft(node=None, parent=sibling, grandParent=parent)
+            sibling.color = parentColor
+            sibling.right.color = True
+            sibling.left.color = True
+            return
+        raise Exception("Removal should've been Done")
 
     def test(self,node):
         if node.left:
